@@ -1,0 +1,223 @@
+$mainColor: #337ab7;
+$hoverColor: #70a1cc;
+$playColor: #008000;
+$startGradient: rgba(0, 137, 255, 0.55);
+$endGradient: rgba(112, 161, 204, 0.1);
+@mixin cutOutlines(){
+  outline: none;
+  text-decoration: none;
+}
+* {
+  
+  cursor: pointer; 
+}
+body {
+  color: $mainColor;
+}
+
+@keyframes introAnim {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+#mJumbotron {
+  
+  position: absolute;
+  z-index: 2222;
+  
+  margin-left: 5px;
+  font-size: 10em;
+  /*
+  -webkit-animation-name: introAnim;
+  -webkit-animation-iteration-count: 3;
+  -webkit-animation-duration: 1s;
+  
+  animation-name: introAnim;
+  animation-iteration-count: 3;
+  animation-duration: 1s;
+  */
+  
+}
+
+h4 {
+  position:absolute;
+  color: $mainColor;
+  margin-left: 65%;
+}
+.slider {
+  position: relative;
+  display: block;
+  background: -webkit-linear-gradient( $startGradient, $endGradient);
+  background: linear-gradient( $startGradient, $endGradient);
+  width: 160px;
+  
+  margin: 0 auto;
+  margin-left: -164%;
+  
+  &:after {
+    position: absolute;
+    content: 'speed (*setInterval)';
+    color: $mainColor;
+    margin-top: -30px;
+    margin-left: -10px;
+  }
+  
+  span {
+    @include cutOutlines();
+  }
+  
+}
+
+
+html.no-touch tr td:hover {
+  background-color: $hoverColor;
+}
+table {
+  width: 40%;
+  height: 480px;
+  margin: 30px auto;
+  
+	cursor: crosshair;
+  
+  
+  tr td{   
+    border: 2px solid $mainColor;
+    transition: background 0.1s; 
+  }
+  
+  
+  
+  @media screen and (min-width: 1500px){
+    
+    height: 560px;
+    .alive {
+      &:before {  
+        width: 20px !important;
+      }
+    }
+  }
+  @media screen and (min-width: 850px) and (max-width: 1024px){
+    width: 70%;
+    height: 480px;
+ 
+    .alive {
+      &:before {  
+        width: 18px !important;
+      }
+    }
+  }
+  @media screen and (min-width: 560px) and (max-width: 850px){
+   
+    width: 70%;
+    height: 480px;
+    
+    .alive {
+      
+      &:before {  
+        width: 14px !important;
+      }
+    }
+    
+  } 
+  @media screen and (min-width: 480px) and (max-width: 560px){ 
+    
+    width: 70%;
+    height: 360px;
+    
+    .alive {
+      
+      &:before {  
+        width: 9px !important;
+      }
+    }
+    
+  }
+  @media screen and ( max-width: 480px ){
+      width: 86%;
+      height: 380px;
+    
+    
+    .alive {
+      
+      &:before {  
+        width: 9px !important;
+      }
+    }
+    
+  }
+
+
+  
+  
+}
+.alive {
+    background-color: $mainColor;
+    
+    &:before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    margin-top: -6px;
+    height: 58px;
+    width: 16px;
+    background: -webkit-linear-gradient( $startGradient, $endGradient);
+    background: linear-gradient( $startGradient, $endGradient);
+    }
+  
+}
+
+
+.buttonPanel {
+  display: block;
+  
+  width: 80px;
+  height: 42px;
+  margin: 0 auto;
+  border: 2px solid $mainColor;
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+  
+  i {
+    display: block;
+    color: $mainColor;
+    
+    font-size: 3.5em;
+    margin-left: 25%;
+    
+    &.started {
+      color: $playColor ;
+    }
+    
+  }
+
+    .clear {
+  
+    margin-top: -30px;
+    margin-left: 100px !important;
+  
+}
+
+  
+  
+}
+
+  .generation {
+        position: absolute;
+        margin-left: 35%;
+        width: 250px;
+        pointer-events: none;
+        font-weight: bold;
+    }
+
+
+.buttonsPlus {
+  position:relative;
+}
+
+.footer {
+  text-align: center;
+}

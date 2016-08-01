@@ -1,0 +1,290 @@
+var Board = React.createClass({
+  next: [],
+  cells: [],
+  stepping: null,
+  step: function(){
+    for ( var i = 0; i <=this.props.size+1; i++ )
+      for ( var y = 0; y <=this.props.size+1; y++ )
+        this.next[i][y] = false;
+    
+    var neighbs = 0;
+    
+    for ( i = 1; i <= this.props.size; i ++ )
+      for ( y = 1; y <= this.props.size; y ++, neighbs = 0 ){
+        
+        if ( this.cells[i-1][y-1] ) neighbs++;
+        if ( this.cells[i-1][y]   ) neighbs++;
+        if ( this.cells[i-1][y+1] ) neighbs++;
+        if ( this.cells[i][y-1]   ) neighbs++;
+        if ( this.cells[i][y+1]   ) neighbs++;
+        if ( this.cells[i+1][y-1] ) neighbs++;
+        if ( this.cells[i+1][y]   ) neighbs++;
+        if ( this.cells[i+1][y+1] ) neighbs++;
+        
+        
+        if ( this.cells[i][y] ){
+          if ( neighbs < 2 || neighbs > 3 ){
+            this.next[i][y] = false;
+            continue;
+          } else {
+            this.next[i][y] = true;
+            continue;
+          }
+            
+        } else if ( neighbs == 3 )
+            this.next[i][y] = true;
+      
+        
+      }
+    
+    
+    var rows = [];
+    for ( i = 1; i <= this.props.size; i ++){
+        for ( y = 1; y <= this.props.size; y++ ){
+          this.cells[i][y] = this.next[i][y]; 
+        }
+      
+      rows.push(this.createCollumns(this.cells[i]));
+    }
+    
+    
+    this.state.rows = rows;
+    this.state.generation++;
+    this.setState(this.state);
+   
+    
+  },
+  set: function(x,y, sign){
+    this.cells[x][y] = sign;
+    
+    this.state.rows[x-1] = this.createCollumns(this.cells[x]);
+    
+    this.setState(this.state);
+    return sign;
+    
+  },
+  createCollumns: function(cells){
+    
+    var collumns = []; 
+    
+      for ( var y = 0, x = 1; y < this.props.size; y ++, x++ ) 
+        collumns.push(
+          <td  className = {(cells[x] ? 'alive' : '')}
+               onMouseDown = {CellEvents.downCell.bind(this)}
+               onMouseOver = {CellEvents.overCell.bind(this)} 
+               onMouseUp = {CellEvents.upCell.bind(this)}>   </td>);
+    
+    return ( <tr> {collumns} </tr> );
+  },
+  getInitialState: function(){
+    
+   
+    
+    var offsetForRandom = (window.innerWidth <= 1280) ? 0.15 : 0.5;
+    
+    for ( var i = 0; i <= this.props.size+1; i ++ ){
+      this.next[i] = []; this.cells[i] = []; 
+      for ( var y = 0; y <= this.props.size+1; y++ ){
+        this.next[i][y]  = false;
+        this.cells[i][y] = Math.floor((Math.random() + offsetForRandom ));
+      }
+      
+    }
+      
+      
+    var rows = [];     for ( var x = 0; x < this.props.size; x++ )
+                              rows.push( this.createCollumns(this.cells[x+1]) );
+  
+    setTimeout(function(){
+      this.startStepping(this.props);
+    }.bind(this),300);
+    return ({ rows: rows, generation: 0 });
+  },
+  componentWillReceiveProps: function(nextProps){
+    this.startStepping(nextProps);
+  },
+  clearBoard: function(){
+      
+      var rows = [];
+      for ( var i = 0; i <= this.props.size+1; i++ )
+        for ( var y = 0 ; y <= this.props.size+1; y++ )
+            this.cells[i][y] = false;
+        
+      for ( i = 1; i <= this.props.size; i++ )
+        rows.push(this.createCollumns(this.cells[i]));
+        
+      
+      
+      this.setState({rows: rows, generation: 0});
+  },
+  startStepping: function(nextProps){
+      if ( !nextProps.begin && this.stepping != null){
+          clearInterval(this.stepping);
+        } else{
+          clearInterval(this.stepping);
+          this.stepping = setInterval(this.step, nextProps.timeInterval);
+        }
+  },
+  render: function(){
+      return ( <div>
+          <h3 className="generation"> Generations: {this.state.generation} </h3>
+        <table> { this.state.rows } </table> 
+          </div>
+      );
+  }
+  
+  
+});
+
+var CellEvents = {
+  
+  browserMSIE:  navigator.userAgent.indexOf("MSIE") != -1 ? true : false,
+  overCell: function(elt){
+   
+    if ( !this.state.click )
+      return;
+    
+    var x = $(elt.target).parent().index()+1;
+    var y = $(elt.target).index()+1;
+    
+    this.set(x,y, true);
+    
+      
+      
+  },
+  downCell: function(elt){
+    
+    if ( elt.button != undefined ){
+      if ( (this.borwserMSIE && elt.button != 1) || elt.button != 0 )
+        return;
+    } else
+      return console.err("elt.button == undefined");
+    
+    
+    this.state.click = true;
+    var x = $(elt.target).parent().index()+1;
+    var y = $(elt.target).index()+1;
+    
+    this.set(x ,y, !this.cells[x][y]);
+    
+  },
+  upCell: function(elt){
+    this.state.click = false;
+  }
+  
+};
+
+var App = React.createClass({
+  
+  board: null,
+  getInitialState: function(){
+    return ({  begin: true, timeInterval: 80, clearGame: false });
+  },
+  startGame: function(){
+    this.state.begin = !this.state.begin;
+    this.setState(this.state);
+  },
+  clearGame: function(){
+    this.state.begin = false; 
+    this.state.generation = 0;
+    this.setState(this.state);
+    
+    this.refs['board'].clearBoard();
+  },
+  componentDidMount: function(){
+    var self = this;
+     $(".slider").slider({
+        value: 80,
+        min: 40,
+        max: 400,
+        step: 40,
+        slide: function(event, ui){
+          self.state.timeInterval = ui.value;
+          self.setState(self.state);
+        }
+      });
+    
+  },
+  render: function(){
+    
+    
+    return (
+    
+      <div>
+        <div className="buttonPanel">
+          <i className={"fa fa-play-circle " + (this.state.begin ? "started" : "") } aria-hidden="true" onClick={this.startGame}></i>
+          
+          
+        <div className="slider"> </div>
+          <h1 className="clear" onClick={this.clearGame}> clear </h1>
+        </div>
+        
+        
+        <div className="board" >
+          <Board
+             ref='board'
+             size={32} 
+             begin={this.state.begin}
+             timeInterval={this.state.timeInterval}/>;
+        </div>
+        
+        <div className="footer"> 
+          
+          <h2> Inspired by: </h2> 
+          <a href="http://codepen.io/Evan-Goode/pen/jPBobv">
+            http://codepen.io/Evan-Goode/pen/jPBobv
+          </a>
+          <br/>
+            <a href="https://codepen.io/imtoobose/pen/QEgVQJ">
+              https://codepen.io/imtoobose/pen/QEgVQJ
+          </a>
+        </div>
+        
+      </div>
+    
+    );
+  }
+  
+  
+});
+
+window.onload = function(){
+  
+  
+  PointerEventsPolyfill.initialize({});
+  
+  var jumbotronIntro = document.getElementById('mJumbotron');
+  
+  for ( var i = 1; i <=3 ; i++ ){
+    
+    
+      console.log("i: " + i);
+      setTimeout((function(i){ return function(){
+        
+        if ( 3 - i == 0 ){
+          $(jumbotronIntro).css('display', 'none');
+          return;
+        }
+        
+        jumbotronIntro.innerHTML = 3 - i;
+      } })(i), i * 1000);
+      
+   
+    
+  }
+  
+  
+  setTimeout(function(){
+  
+    ReactDOM.render(
+
+      <App />,
+      document.getElementById("content")
+
+    );
+    
+  }, 3000 );
+  
+  
+  
+}
